@@ -1,7 +1,7 @@
 var fs = require('fs');
 var twitter = require('twitter');
 
-var config = JSON.parse(fs.readFileSync('config.json').toString().trim());
+var config = JSON.parse(fs.readFileSync(__dirname + '/config.json').toString().trim());
 
 var tw = new twitter(config.twitter);
 

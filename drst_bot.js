@@ -1,38 +1,22 @@
-var twitter = require('twitter');
-var mysql = require('mysql');
-var _ = require('underscore');
-var fs = require('fs');
+var fs = require('fs');	
 var lwip = require('lwip');
-var express = require('express');
 
-var config = JSON.parse(fs.readFileSync('config.json').toString().trim());
-
-var tw = new twitter(config.twitter);
-
-var db = mysql.createConnection(config.db);
-
-db.connect();
+var config = JSON.parse(fs.readFileSync(__dirname + '/config.json').toString().trim());
 
 var OFFSET = 12;
 var IMG_SIZE = 88 + OFFSET;
 
 var limit = false;
-tw.get('users/show', {
-	screen_name: 'drst_bot'
-}, function(err, res) {
-	if(err) {
-		console.log(err);
-	}
-	
-	if(res.name.match(/리밋/)) {
-		limit = true;
-	}
-});
 
+var db = require('mysql').createConnection(config.db);
+db.connect();
 db.query('SELECT * FROM `drst_bot` WHERE 1;', function(err, rows) {
 	if(err) {
-		console.log(err);
+		console.error(err);
+		return;
 	}
+	
+	var _ = require('underscore');
 	
 	var cards = [];
 	var raw_cards = [];
@@ -41,11 +25,14 @@ db.query('SELECT * FROM `drst_bot` WHERE 1;', function(err, rows) {
 		while(count > 0) {
 			cards.push(row);
 			--count;
-			raw_cards.push(row);
 		}
+		raw_cards.push(row);
 	});
-	cards = _.groupBy(cards, function(card) { return card.ds_rarity; });
+	cards = _.groupBy(cards, function(card) {
+		return card.ds_rarity;
+	});
 	
+	var express = require('express');
 	var app = express();
 	app.set('view engine', 'ejs');
 	app.use(express.static('data'));
@@ -57,6 +44,19 @@ db.query('SELECT * FROM `drst_bot` WHERE 1;', function(err, rows) {
 	});
 	
 	app.listen(config.port);
+	var tw = new require('twitter')(config.twitter);
+	
+	tw.get('users/show', {
+		screen_name: 'drst_bot'
+	}, function(err, res) {
+		if(err) {
+			console.error(err);
+		}
+		
+		if(res.name.match(/리밋/)) {
+			limit = true;
+		}
+	});
 
 	tw.stream('user', function(stream) {
 		stream.on('follow', function(data) {
@@ -74,86 +74,80 @@ db.query('SELECT * FROM `drst_bot` WHERE 1;', function(err, rows) {
 		});
 		
 		stream.on('data', function(data) {
-			if(data.event) {
-				
-			}
-			else {
+			if(!data.event && !data.retweeted_status && data.text && !limit) {
+				console.log(data.text);
 				var flag = false;
+				for(var i = 0; i < data.entities.user_mentions.length; ++i) {
+					if(data.entities.user_mentions[i].screen_name == 'drst_bot') {
+						flag = true;
+						break;
+					}
+				}
 				
-				if(!data.retweeted_status) {
-					if(data.text && !limit) {
-						for(var i = 0; i < data.entities.user_mentions.length; ++i) {
-							if(data.entities.user_mentions[i].screen_name == 'drst_bot') {
-								flag = true;
-								break;
+				if(flag && data.text.match(/가챠|뽑기/)) {
+					console.log(data.text);
+					var c = [];
+					for(var i = 0; i < 10; ++i) {
+						var r = Math.random();
+						if(r < 0.015) {
+							c.push(_.sample(cards.ssr, 1));
+						}
+						else if(r < 0.10) {
+							c.push(_.sample(cards.sr, 1));
+						}
+						else {
+							if(i == 9) {
+								c.push(_.sample(cards.sr, 1));
+							}
+							else {
+								c.push(_.sample(cards.r, 1));
 							}
 						}
-						
-						if(flag && data.text.match(/가챠|뽑기/)) {
-							var c = [];
-							for(var i = 0; i < 10; ++i) {
-								var r = Math.random();
-								if(r < 0.015) {
-									c.push(_.sample(cards.ssr, 1));
-								}
-								else if(r < 0.10) {
-									c.push(_.sample(cards.sr, 1));
-								}
-								else {
-									if(i == 9) {
-										c.push(_.sample(cards.sr, 1));
+					}
+					
+					lwip.create(IMG_SIZE * 5, IMG_SIZE * 2, { a: 0, r: 0, g: 0, b: 0 }, function(err, image) {
+						var filenames = [];
+						for(var i = 0; i < 10; ++i) {
+							filenames.push(c[i][0].ds_filename);
+						}
+						open(filenames, [], function(srcs) {
+							paste(image, srcs, 0, 0, function(dst) {
+								dst.toBuffer('png', function(err, buffer) {
+									if(err) {
+										console.log(err);
 									}
-									else {
-										c.push(_.sample(cards.r, 1));
-									}
-								}
-							}
-							
-							lwip.create(IMG_SIZE * 5, IMG_SIZE * 2, { a: 0, r: 0, g: 0, b: 0 }, function(err, image) {
-								var filenames = [];
-								for(var i = 0; i < 10; ++i) {
-									filenames.push(c[i][0].ds_filename);
-								}
-								open(filenames, [], function(srcs) {
-									paste(image, srcs, 0, 0, function(dst) {
-										dst.toBuffer('png', function(err, buffer) {
+									tw.post('media/upload', {
+										media: buffer
+									}, function(err, res) {
+										if(err) {
+											console.log(err);
+										}
+										tw.post('statuses/update', {
+											status: '@' + data.user.screen_name,
+											in_reply_to_status_id: data.id_str,
+											media_ids: res.media_id_string
+										}, function(err, res) {
 											if(err) {
-												console.log(err);
-											}
-											tw.post('media/upload', {
-												media: buffer
-											}, function(err, res) {
-												if(err) {
-													console.log(err);
-												}
-												tw.post('statuses/update', {
-													status: '@' + data.user.screen_name,
-													in_reply_to_status_id: data.id_str,
-													media_ids: res.media_id_string
-												}, function(err, res) {
-													if(err) {
-														if(err[0].code == 185) {
-															tw.post('account/update_profile', {
-																name: '[리밋] 데레스테 가챠 봇'
-															}, function(err, res) {
-																if(err) {
-																	console.log(err);
-																}
-																limit = true;
-															});
-														}
-														else {
+												if(err[0].code == 185) {
+													tw.post('account/update_profile', {
+														name: '[리밋] 데레스테 가챠 봇'
+													}, function(err, res) {
+														if(err) {
 															console.log(err);
 														}
-													}
-												});
-											});
+														limit = true;
+													});
+												}
+												else {
+													console.log(err);
+												}
+											}
 										});
 									});
 								});
 							});
-						}
-					}
+						});
+					});
 				}
 			}
 		});
