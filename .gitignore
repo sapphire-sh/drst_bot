@@ -27,4 +27,4 @@ build/Release
 node_modules
 
 data
-config.json
+config.js

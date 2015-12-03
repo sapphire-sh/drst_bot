@@ -1,9 +1,10 @@
+'use strict';
+
 var fs = require('fs');
-var twitter = require('twitter');
+var twit = require('twit');
+var config = require('./config.js');
 
-var config = JSON.parse(fs.readFileSync(__dirname + '/config.json').toString().trim());
-
-var tw = new twitter(config.twitter);
+var tw = new twit(config.twitter);
 
 var status;
 switch(process.argv[2]) {
@@ -18,7 +19,7 @@ case 'gacha':
 if(status) {
 	tw.post('statuses/update', {
 		status: status
-	}, function(err, res) {
+	}, function(err, data, res) {
 		if(err) {
 			console.log(err);
 		}
