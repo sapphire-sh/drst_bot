@@ -2,6 +2,7 @@
 
 var fs = require('fs');	
 var config = require('./config.js');
+var _ = require('underscore');
 var lwip = require('lwip');
 var knex = require('knex')(config.knex);
 var twit = require('twit');
@@ -13,8 +14,6 @@ var limit = false;
 
 knex('drst_bot')
 .then(function(rows) {
-	var _ = require('underscore');
-	
 	var cards = [];
 	var raw_cards = [];
 	_.each(rows, function(row) {
@@ -42,17 +41,16 @@ knex('drst_bot')
 	});
 
 	var stream = tw.stream('user');
+	
 	stream.on('follow', function(data) {
-		if(data.event == 'follow') {
-			if(data.source.screen_name != 'drst_bot') {
-				tw.post('friendships/create', {
-					user_id: data.source.id_str
-				}, function(err, res) {
-					if(err) {
-						console.log(err);
-					}
-				});
-			}
+		if(data.event == 'follow' && data.source.screen_name != 'drst_bot') {
+			tw.post('friendships/create', {
+				user_id: data.source.id_str
+			}, function(err, res) {
+				if(err) {
+					console.log(err);
+				}
+			});
 		}
 	});
 	

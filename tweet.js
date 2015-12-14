@@ -1,9 +1,7 @@
 'use strict';
 
-var fs = require('fs');
-var twit = require('twit');
 var config = require('./config.js');
-
+var twit = require('twit');
 var tw = new twit(config.twitter);
 
 var status;
