@@ -101,13 +101,17 @@ knex('drst_bot')
 									if(err) {
 										console.log(err);
 									}
+									var str = '@' + data.user.screen_name + '\n';
+									for(var i = 0; i < 10; ++i) {
+										str += '[' + c[i][0].ds_rarity.toUpperCase() + '] ' + c[i][0].ds_name + '\n';
+									}
 									tw.post('statuses/update', {
-										status: '@' + data.user.screen_name,
+										status: str,
 										in_reply_to_status_id: data.id_str,
 										media_ids: res.media_id_string
 									}, function(err, res) {
 										if(err) {
-											if(err[0].code == 185) {
+											if(err[0] && err[0].code == 185) {
 												tw.post('account/update_profile', {
 													name: '[리밋] 데레스테 가챠 봇'
 												}, function(err, res) {
@@ -155,13 +159,15 @@ knex('drst_bot')
 									if(err) {
 										console.log(err);
 									}
+									var str = '@' + data.user.screen_name + '\n';
+									str += '[' + c[0].ds_rarity.toUpperCase() + '] ' + c[0].ds_name + '\n';
 									tw.post('statuses/update', {
-										status: '@' + data.user.screen_name,
+										status: str,
 										in_reply_to_status_id: data.id_str,
 										media_ids: res.media_id_string
 									}, function(err, res) {
 										if(err) {
-											if(err[0].code == 185) {
+											if(err[0] && err[0].code == 185) {
 												tw.post('account/update_profile', {
 													name: '[리밋] 데레스테 가챠 봇'
 												}, function(err, res) {
