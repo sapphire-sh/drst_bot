@@ -103,7 +103,7 @@ knex('drst_bot')
 									}
 									var str = '@' + data.user.screen_name + '\n';
 									for(var i = 0; i < 10; ++i) {
-										str += '[' + c[i][0].ds_rarity.toUpperCase() + '] ' + c[i][0].ds_name + '\n';
+										str += c[i][0].ds_rarity.toUpperCase() + ' ' + c[i][0].ds_name + '\n';
 									}
 									tw.post('statuses/update', {
 										status: str,
@@ -122,6 +122,7 @@ knex('drst_bot')
 												});
 											}
 											else {
+												console.log(str);
 												console.log(err);
 											}
 										}
@@ -160,7 +161,7 @@ knex('drst_bot')
 										console.log(err);
 									}
 									var str = '@' + data.user.screen_name + '\n';
-									str += '[' + c[0].ds_rarity.toUpperCase() + '] ' + c[0].ds_name + '\n';
+									str += c[0].ds_rarity.toUpperCase() + ' ' + c[0].ds_name + '\n';
 									tw.post('statuses/update', {
 										status: str,
 										in_reply_to_status_id: data.id_str,
