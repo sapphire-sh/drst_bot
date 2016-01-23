@@ -64,7 +64,7 @@ knex('drst_bot')
 				}
 			}
 			
-			if(flag && data.text.match(/가챠|뽑기/)) {
+			if(flag && data.text.toLowerCase().match(/가챠|뽑기|gacha/)) {
 				var c = [];
 				for(var i = 0; i < 10; ++i) {
 					var r = Math.random();
