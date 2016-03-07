@@ -4,9 +4,9 @@
   "description": "@drst_bot",
   "main": "drst_bot.js",
   "scripts": {
-    "pretest": "./node_modules/.bin/jshint drst_bot.js",
-    "start": "pm2 start drst_bot.js",
-    "stop": "pm2 delete drst_bot.js"
+    "pretest": "./node_modules/.bin/jshint ./src",
+    "start": "pm2 start ./app.json",
+    "stop": "pm2 delete ./app.json"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,4 @@
+{
+	"name": "drst_bot",
+	"script": "./src/app.js"
+}
