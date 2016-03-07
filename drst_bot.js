@@ -7,6 +7,7 @@ var lwip = require('lwip');
 var knex = require('knex')(config.knex);
 var twit = require('twit');
 var tw = new twit(config.twitter);
+var schedule = require('node-schedule');
 var OFFSET = 12;
 var IMG_SIZE = 88 + OFFSET;
 
@@ -250,5 +251,31 @@ function resolve_limit(offset) {
 		});
 	}
 }
+
+schedule.scheduleJob('1 0 * * *', function() {
+	var status = '오늘의 가챠 @drst_bot';
+	status = '데레스테 가챠 봇 입니다.\n\'가챠\' 또는 \'뽑기\'를 포함한 멘션을 보내면 10연 가챠를 시뮬레이션 해서 보내드립니다.\n봇이 멘션에 5초 안에 반응하지 않는다면 다시 멘션 보내주세요.\n봇이 리밋 상태일 경우 봇 이름에 [리밋]으로 표시 됩니다. ' + new Date().getHours();
+	
+	tw.post('statuses/update', {
+		status: status
+	}, function(err, data, res) {
+		if(err) {
+			console.log(err);
+		}
+	});
+});
+
+schedule.scheduleJob('2 0,12,18 * * *', function() {
+	var status = '데레스테 가챠 봇 입니다.\n\'가챠\' 또는 \'뽑기\'를 포함한 멘션을 보내면 10연 가챠를 시뮬레이션 해서 보내드립니다.\n봇이 멘션에 5초 안에 반응하지 않는다면 다시 멘션 보내주세요.\n봇이 리밋 상태일 경우 봇 이름에 [리밋]으로 표시 됩니다. ' + new Date().getHours();
+	
+	tw.post('statuses/update', {
+		status: status
+	}, function(err, data, res) {
+		if(err) {
+			console.log(err);
+		}
+	});
+});
+
 
 setInterval(resolve_limit, 60000);
