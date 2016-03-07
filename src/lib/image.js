@@ -1,82 +1,57 @@
 'use strict';
 
-const fs		= require('fs');	
-const lwip		= require('lwip');
+const fs = require('fs');	
 
-const OFFSET	= 12;
-const IMG_SIZE	= 88 + OFFSET;
+const _ = require('underscore');
+const lwip = require('lwip');
+
+const OFFSET = 12;
+const IMG_SIZE = 88 + OFFSET;
 
 class Image {
-	constructor() {
-		
-	}
-	
 	createImage(cards, callback) {
-		if(cards.length === 1) {
-			lwip.create(IMG_SIZE, IMG_SIZE, { a: 0, r: 0, g: 0, b: 0 }, function(err, image) {
-				var filename = cards[0].ds_filename;
-				lwip.open('data/' + filename, function(err, src) {
-					image.paste(OFFSET / 2, OFFSET / 2, src, function(err, dst) {
-						dst.toBuffer('png', function(err, buffer) {
-							if(err) {
-								console.log(err);
-							}
-							else {
-								callback(buffer);
-							}
+		let width = IMG_SIZE * (cards instanceof Array ? 5 : 1);
+		let height = IMG_SIZE * (cards instanceof Array ? 2 : 1);
+		if(!(cards instanceof Array)) {
+			cards = [cards];
+		}
+		lwip.create(width, height, {
+			a: 0,
+			r: 0,
+			g: 0,
+			b: 0
+		}, (err, image) => {
+			_.reduce(cards, (promise, card, i) => {
+				return promise.then((image1) => {
+					return new Promise((resolve, reject) => {
+						let filename = card.filename;
+						let offset_width = (i % 5) * IMG_SIZE;
+						let offset_height = (i < 5 ? 0 : IMG_SIZE);
+						lwip.open('data/' + filename, (err, src) => {
+							image1.paste(offset_width + OFFSET / 2, offset_height + OFFSET / 2, src, (err, dst) => {
+								if(err) {
+									reject();
+								}
+								else {
+									resolve(dst);
+								}
+							});
 						});
 					});
 				});
-			});
-		}
-		else {
-			var filenames = [];
-			for(var i = 0; i < 10; ++i) {
-				filenames.push(cards[i][0].ds_filename);
-			}
-			lwip.create(IMG_SIZE * 5, IMG_SIZE * 2, { a: 0, r: 0, g: 0, b: 0 }, function(err, image) {
-				open(filenames, [], function(srcs) {
-					paste(image, srcs, 0, 0, function(dst) {
-						dst.toBuffer('png', function(err, buffer) {
-							if(err) {
-								console.log(err);
-							}
-							else {
-								callback(buffer);
-							}
-						});
-					});
+			}, Promise.resolve(image))
+			.then((dst) => {
+				dst.toBuffer('png', function(err, buffer) {
+					if(err) {
+						console.log(err);
+					}
+					else {
+						callback(buffer);
+					}
 				});
 			});
-		}
-	}
-}
-
-function open(filenames, srcs, callback) {
-	var filename = filenames.pop();
-	if(filename === undefined) {
-		callback(srcs);
-	}
-	else {
-		lwip.open('data/' + filename, function(err, image) {
-			srcs.push(image);
-
-			open(filenames, srcs, callback);
 		});
 	}
 }
-
-function paste(dst, srcs, left, top, callback) {
-	var src = srcs.pop();
-	if(src === undefined) {
-		callback(dst);
-	}
-	else {
-		dst.paste(left + OFFSET / 2, top + OFFSET / 2, src, function(err, image) {
-			paste(image, srcs, (left + IMG_SIZE) % (IMG_SIZE * 5), (left == IMG_SIZE * 4 ? IMG_SIZE : top), callback);
-		});
-	}
-}
-
 
 module.exports = Image;

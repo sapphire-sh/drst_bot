@@ -1,9 +1,9 @@
 'use strict';
 
-const _				= require('underscore');
+const _ = require('underscore');
 
-const REGEX_MULTI	= /가챠|뽑기|gacha|gasha|가샤|ガシャ|がしゃ|ガチャ|がちゃ/;
-const REGEX_SINGLE	= /단챠/;
+const REGEX_MULTI = /가챠|뽑기|gacha|gasha|가샤|ガシャ|がしゃ|ガチャ|がちゃ/;
+const REGEX_SINGLE = /단챠/;
 
 class Stream {
 	constructor(twit) {
@@ -55,7 +55,7 @@ class Stream {
 		self.image.createImage(cards, (buffer) => {
 			var str = '@' + data.user.screen_name + '\n';
 			for(var i = 0; i < 10; ++i) {
-				str += cards[i][0].ds_rarity.toUpperCase() + ' ' + cards[i][0].ds_name + '\n';
+				str += cards[i].rarity.toUpperCase() + ' ' + cards[i].name + '\n';
 			}
 			self._tweet(str, data.id_str, buffer);
 		});
@@ -64,11 +64,11 @@ class Stream {
 	_replySingle(data) {
 		var self = this;
 		
-		let cards = self.card.pickSingleCard();
+		let card = self.card.pickSingleCard();
 		
-		self.image.createImage(cards, (buffer) => {
+		self.image.createImage(card, (buffer) => {
 			var str = '@' + data.user.screen_name + '\n';
-			str += cards[0].ds_rarity.toUpperCase() + ' ' + cards[0].ds_name + '\n';
+			str += card.rarity.toUpperCase() + ' ' + card.name + '\n';
 			
 			self._tweet(str, data.id_str, buffer);
 		});
@@ -89,15 +89,8 @@ class Stream {
 				media_ids: res.media_id_string
 			}, function(err, res) {
 				if(err) {
-					if(err[0] && err[0].code == 185) {
-						self.twit.post('account/update_profile', {
-							name: '[리밋] 데레스테 가챠 봇'
-						}, function(err, res) {
-							if(err) {
-								console.log(err);
-							}
-							self.user.limit = true;
-						});
+					if(err[0] && err[0].code === 185) {
+						self.user.setLimit();
 					}
 					else {
 						console.log(err);

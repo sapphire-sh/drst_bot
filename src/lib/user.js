@@ -25,6 +25,14 @@ class Limit {
 		let self = this;
 		self.limit = true;
 		
+		self.twit.post('account/update_profile', {
+			name: '[리밋] 데레스테 가챠 봇'
+		}, function(err, res) {
+			if(err) {
+				console.log(err);
+			}
+		});
+		
 		self.intv = setInterval(self._resolveLimit.bind(self), 60 * 1000);
 	}
 	
