@@ -194,6 +194,9 @@ knex('drst_bot')
 })
 .catch(function(err) {
 	console.log(err);
+})
+.finally(function() {
+    knex.destroy();
 });
 
 function open(filenames, srcs, callback) {
