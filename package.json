@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+https://github.com/sapphiredev/drst_bot.git"
   },
-  "author": "sapphiredev <se.imas.kr@gmail.com>",
+  "author": "sapphire",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/sapphiredev/drst_bot/issues"
