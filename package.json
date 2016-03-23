@@ -6,7 +6,7 @@
   "scripts": {
     "pretest": "./node_modules/.bin/jshint ./src",
     "start": "pm2 start ./app.json",
-    "stop": "pm2 delete ./app.json"
+    "stop": "pm2 stop ./app.json"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,4 @@
 {
-	"name": "drst_bot",
+	"name": "@drst_bot",
 	"script": "./src/app.js"
 }
