@@ -3,7 +3,7 @@
 const _ = require('underscore');
 
 const REGEX_MULTI = /가챠|뽑기|gacha|gasha|가샤|ガシャ|がしゃ|ガチャ|がちゃ/;
-const REGEX_SINGLE = /단챠/;
+const REGEX_SINGLE = /단챠|単発/;
 
 class Stream {
 	constructor(twit) {
@@ -89,7 +89,7 @@ class Stream {
 				media_ids: res.media_id_string
 			}, function(err, res) {
 				if(err) {
-					if(err[0] && err[0].code === 185) {
+					if(err.code === 185) {
 						self.user.setLimit();
 					}
 					else {

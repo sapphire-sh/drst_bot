@@ -45,9 +45,11 @@ class Limit {
 			status : "리밋이 해제되었습니다. " + offset
 		}, (err, res) => {
 			if (err) {
-				console.log(err);
-				if(err[0].code === 187) {
+				if(err.code === 187) {
 					self._resolveLimit(offset + 1);
+				}
+				else {
+					console.log(err);
 				}
 			}
 			else {
