@@ -1,9 +1,10 @@
 'use strict';
 
 class Limit {
-	constructor(twit) {
+	constructor(twit, twit_sub) {
 		let self = this;
 		self.twit = twit;
+		self.twit_sub = twit_sub;
 		self.limit = false;
 		self.data = {};
 		
@@ -42,7 +43,7 @@ class Limit {
 		offset = offset === undefined ? 0 : offset;
 		
 		self.twit.post('statuses/update', {
-			status : "리밋이 해제되었습니다. " + offset
+			status : '리밋이 해제되었습니다. ' + offset
 		}, (err, res) => {
 			if (err) {
 				if(err.code === 187) {

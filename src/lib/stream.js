@@ -6,15 +6,17 @@ const REGEX_MULTI = /가챠|뽑기|gacha|gasha|가샤|ガシャ|がしゃ|ガチ
 const REGEX_SINGLE = /단챠|単発/;
 
 class Stream {
-	constructor(twit) {
+	constructor(twit, twit_sub) {
 		let self = this;
 		self.twit = twit;
+		self.twit_sub = twit_sub;
 	}
 	
 	startStream() {
 		let self = this;
 		
 		let stream = self.twit.stream('user');
+		let stream_sub = self.twit_sub.stream('user');
 		
 		stream.on('follow', (data) => {
 			if(data.event === 'follow' && data.source.screen_name !== 'drst_bot') {
@@ -32,6 +34,27 @@ class Stream {
 			if(!data.retweeted_status && !self.user.limit) {
 				let flag = _.some(data.entities.user_mentions, (user) => {
 					return user.screen_name === 'drst_bot';
+				});
+				
+				if(flag) {
+					let text = data.text.toLowerCase();
+					if(text.match(REGEX_MULTI)) {
+						self._replyMultiple(data);
+					}
+					else if(text.match(REGEX_SINGLE)) {
+						self._replySingle(data);
+					}
+				}
+			}
+		});
+		
+		stream_sub.on('tweet', (data) => {
+			if(!data.retweeted_status && !self.user.limit) {
+				let flag = _.some(data.entities.user_mentions, (user) => {
+					return user.screen_name === 'drst_bot_1';
+				});
+				flag &= _.every(data.entities.user_mentions, (user) => {
+					return user.screen_name !== 'drst_bot';
 				});
 				
 				if(flag) {
@@ -90,7 +113,33 @@ class Stream {
 			}, function(err, res) {
 				if(err) {
 					if(err.code === 185) {
-						self.user.setLimit();
+						self._tweet_sub(status, in_reply_to, buffer);
+					}
+					else {
+						console.log(err);
+					}
+				}
+			});
+		});
+	}
+	
+	_tweet_sub(status, in_reply_to, buffer) {
+		var self = this;
+		
+		self.twit_sub.post('media/upload', {
+			media_data: buffer.toString('base64')
+		}, function(err, res) {
+			if(err) {
+				console.log(err);
+			}
+			self.twit_sub.post('statuses/update', {
+				status: status,
+				in_reply_to_status_id: in_reply_to,
+				media_ids: res.media_id_string
+			}, function(err, res) {
+				if(err) {
+					if(err.code === 185) {
+					//	self.user.setLimit();
 					}
 					else {
 						console.log(err);
