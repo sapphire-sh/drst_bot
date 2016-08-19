@@ -20,8 +20,9 @@
   "homepage": "https://github.com/sapphiredev/drst_bot#readme",
   "dependencies": {
     "knex": "^0.9.0",
-    "lwip": "^0.0.8",
+    "lwip": "0.0.9",
     "mysql": "^2.9.0",
+    "node-schedule": "^1.1.1",
     "twit": "^2.1.1",
     "underscore": "^1.8.3"
   },
