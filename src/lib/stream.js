@@ -77,9 +77,9 @@ class Stream {
 		
 		self.image.createImage(cards, (buffer) => {
 			var str = '@' + data.user.screen_name + '\n';
-			for(var i = 0; i < 10; ++i) {
-				str += cards[i].rarity.toUpperCase() + ' ' + cards[i].name + '\n';
-			}
+			//for(var i = 0; i < 10; ++i) {
+			//	str += cards[i].rarity.toUpperCase() + ' ' + cards[i].name + '\n';
+			//}
 			self._tweet(str, data.id_str, buffer);
 		});
 	}
@@ -91,7 +91,7 @@ class Stream {
 		
 		self.image.createImage(card, (buffer) => {
 			var str = '@' + data.user.screen_name + '\n';
-			str += card.rarity.toUpperCase() + ' ' + card.name + '\n';
+			//str += card.rarity.toUpperCase() + ' ' + card.name + '\n';
 			
 			self._tweet(str, data.id_str, buffer);
 		});
