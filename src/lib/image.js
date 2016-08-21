@@ -27,7 +27,7 @@ class Image {
 						let filename = card.filename;
 						let offset_width = (i % 5) * IMG_SIZE;
 						let offset_height = (i < 5 ? 0 : IMG_SIZE);
-						lwip.open('data/' + filename, (err, src) => {
+						lwip.open(__dirname + '/../../data/' + filename, (err, src) => {
 							image1.paste(offset_width + OFFSET / 2, offset_height + OFFSET / 2, src, (err, dst) => {
 								if(err) {
 									reject();
