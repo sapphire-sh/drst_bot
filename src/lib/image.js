@@ -1,12 +1,15 @@
 'use strict';
 
 const fs = require('fs');	
+const path = require('path');
 
 const _ = require('underscore');
 const lwip = require('lwip');
 
 const OFFSET = 12;
 const IMG_SIZE = 88 + OFFSET;
+
+const IMG_DIR = path.join(__dirname, '..', '..', 'data');
 
 class Image {
 	createImage(cards, callback) {
@@ -27,7 +30,7 @@ class Image {
 						let filename = card.filename;
 						let offset_width = (i % 5) * IMG_SIZE;
 						let offset_height = (i < 5 ? 0 : IMG_SIZE);
-						lwip.open(__dirname + '/../../data/' + filename, (err, src) => {
+						lwip.open(IMG_DIR + '/' + filename, (err, src) => {
 							image1.paste(offset_width + OFFSET / 2, offset_height + OFFSET / 2, src, (err, dst) => {
 								if(err) {
 									reject();

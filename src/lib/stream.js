@@ -133,7 +133,7 @@ class Stream {
 				console.log(err);
 			}
 			self.twit_sub.post('statuses/update', {
-				status: status,
+				status: '@drst_bot ' + status,
 				in_reply_to_status_id: in_reply_to,
 				media_ids: res.media_id_string
 			}, function(err, res) {
