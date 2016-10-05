@@ -1,92 +1,152 @@
 'use strict';
 
-const fs = require('fs');
-const _ = require('underscore');
+let path = require('path');
 
-const SSR_RATE = 0.015;
-const SR_RATE = 0.10;
+const config = require('../../config');
+
+let knex = require('knex')(config.knex);
+
+const lwip = require('lwip');
+
+const offset = 12;
+const img_size = 88 + offset;
+
+const img_dir = path.join(__dirname, '..', '..', 'data');
+
+const table_name = 'drst_bot';
+
+const ssr_rate = 0.015;
+const sr_rate = 0.10;
 
 class Card {
-	constructor(knex) {
-		let self = this;
-		self.knex = knex;
-		self.data = {};
-		
-		self._initialize();
-	}
-	
-	_initialize() {
+	initialize() {
 		var self = this;
 		
-		self.knex('drst_bot')
-		.where('ds_multiplier', '!=', 0)
-		.then((rows) => {
-			let cards = [];
-			_.each(rows, function(row) {
-				let count = row.ds_multiplier;
-				while(count > 0) {
-					cards.push({
-						name: row.ds_name,
-						rarity: row.ds_rarity,
-						filename: row.ds_filename,
-						multiplier: row.ds_multiplier
+		self.cards = {
+			ssr: [],
+			sr: [],
+			r: []
+		};
+		
+		return new Promise((resolve, reject) => {
+			return knex(table_name).then((rows) => {
+				rows.forEach((row) => {
+					Array.from(Array(row.multiplier)).forEach(() => {
+						self.cards[row.rarity].push(row);
 					});
-					--count;
-				}
+				});
+				knex.destroy();
+				resolve();
+			}).catch((e) => {
+				console.log(e);
 			});
-			self.data = _.groupBy(cards, function(card) {
-				return card.rarity;
-			});
-		})
-		.catch(function(err) {
-			console.log(err);
-		})
-		.finally(function() {
-		    self.knex.destroy();
 		});
 	}
 	
 	_pickCard(isSR) {
 		let self = this;
 		
-		isSR = isSR === undefined ? false : isSR;
-		
-		if(isSR) {
-			return _.sample(self.data.sr, 1)[0];
-		}
-		else {
-			let r = Math.random();
-			if(r < SSR_RATE) {
-				return _.sample(self.data.ssr, 1)[0];
+		return new Promise((resolve, reject) => {
+			let rarity = Math.random();
+			
+			if(isSR) {
+				if(rarity < ssr_rate) {
+					resolve(self.cards.ssr[parseInt(Math.random() * self.cards.ssr.length)]);
+				}
+				else {
+					resolve(self.cards.sr[parseInt(Math.random() * self.cards.sr.length)]);
+				}
 			}
-			r = Math.random();
-			if(r < SR_RATE) {
-				return _.sample(self.data.sr, 1)[0];
+			else {
+				let rarity = Math.random();
+				if(rarity < ssr_rate) {
+					resolve(self.cards.ssr[parseInt(Math.random() * self.cards.ssr.length)]);
+				}
+				else if(rarity < ssr_rate + sr_rate) {
+					resolve(self.cards.sr[parseInt(Math.random() * self.cards.sr.length)]);
+				}
+				else {
+					resolve(self.cards.r[parseInt(Math.random() * self.cards.r.length)]);
+				}
 			}
-			return _.sample(self.data.r, 1)[0];
-		}
+		});
 	}
 	
 	pickSingleCard() {
 		var self = this;
 		
-		return self._pickCard();
+		return new Promise((resolve, reject) => {
+			self._pickCard().then((card) => {
+				resolve([card]);
+			});
+		});
 	}
 	
 	pickMultipleCards() {
 		var self = this;
 		
-		let cards = [];
-		_(10).times((i) => {
-			var card = self._pickCard();
-			if(i === 9 && card.rarity === 'r') {
-				card = self._pickCard(true);
-			}
-			cards.push(card);
+		return new Promise((resolve, reject) => {
+			let promises = Array.from(Array(10)).map((e, i) => {
+				if(i === 9) {
+					return self._pickCard(true);
+				}
+				else {
+					return self._pickCard();
+				}
+			});
+			Promise.all(promises).then((res) => {
+				resolve(res);
+			}).catch((e) => {
+				console.log(e);
+			});
 		});
+	}
+	
+	createImage(cards) {
+		let self = this;
 		
-		return cards;
+		return new Promise((resolve, reject) => {
+			let width = img_size * (cards.length === 1 ? 1 : 5);
+			let height = img_size * (cards.length === 1 ? 1 : 2);
+			
+			lwip.create(width, height, {
+				a: 1,
+				r: 1,
+				g: 1,
+				b: 1
+			}, (err, image) => {
+				cards.reduce((promise, card, i) => {
+					return promise.then((image) => {
+						return new Promise((resolve, reject) => {
+							let filename = card.filename;
+							let offset_width = (i % 5) * img_size;
+							let offset_height = (i < 5 ? 0 : img_size);
+							lwip.open(path.join(img_dir, filename), (err, src) => {
+								image.paste(offset_width + offset / 2, offset_height + offset / 2, src, (err, dst) => {
+									if(err) {
+										throw new Error(err);
+									}
+									else {
+										resolve(dst);
+									}
+								});
+							});
+						});
+					});
+				}, Promise.resolve(image)).then((dst) => {
+					dst.toBuffer('png', function(err, buffer) {
+						if(err) {
+							throw new Error(err);
+						}
+						resolve(buffer);
+					});
+				}).catch((e) => {
+					console.log(e);
+				});
+			});
+		});
 	}
 }
 
 module.exports = Card;
+

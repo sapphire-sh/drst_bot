@@ -1,0 +1,21 @@
+language: node_js
+
+node_js:
+  - "node"
+  - "6"
+  - "5"
+  - "4"
+
+sudo: false
+
+script:
+  - cp config.sample.js config.js
+  - jshint src/
+  - npm test
+
+notifications:
+  email: false
+
+after_success:
+  - npm run coveralls
+

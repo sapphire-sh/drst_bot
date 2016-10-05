@@ -1,24 +1,36 @@
 'use strict';
 
-const CONFIG = require('../config.js');
+const config = require('../config.js');
 
-const _ = require('underscore');
-const knex = require('knex')(CONFIG.knex);
-const twit = new (require('twit'))(CONFIG.twitter);
-const twit_sub = new (require('twit'))(CONFIG.twitter_sub);
-const image = new (require('./lib/image'))();
-const notify = new (require('./lib/notify'))(twit);
-const user = new (require('./lib/user'))(twit, twit_sub);
-const stream = new (require('./lib/stream'))(twit, twit_sub);
-const card = new (require('./lib/card'))(knex);
+let knex = require('knex')(config.knex);
+let twit = new (require('twit'))(config.twitter);
+let twit_sub = new (require('twit'))(config.twitter_sub);
 
-let intv = setInterval(() => {
-	if(_.keys(card).length !== 0 && _.keys(user.data).length !== 0) {
-		stream.image = image;
-		stream.card = card;
-		stream.user = user;
-		stream.startStream();
+let Card = new require('./lib/card');
+let Twitter = new require('./lib/twitter');
+
+class App {
+	constructor() {
+		let self = this;
 		
-		clearInterval(intv);
+		self.card = new Card();
+		self.card.initialize().then(() => {
+			self.twitter = new Twitter();
+			return self.twitter.initialize(self.card);
+		}).then(() => {
+			if(process.env.NODE_ENV !== 'test') {
+				self.twitter.startStream();
+				self.twitter.startScheduler();
+			}
+		}).catch((e) => {
+			console.log(e);
+		});
 	}
-}, 100);
+}
+
+if(process.env.NODE_ENV !== 'test') {
+	let app = new App();
+}
+
+module.exports = App;
+

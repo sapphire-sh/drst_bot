@@ -1,12 +1,14 @@
 {
   "name": "drst_bot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "@drst_bot",
-  "main": "drst_bot.js",
+  "main": "./src/app.js",
   "scripts": {
-    "pretest": "./node_modules/.bin/jshint ./src",
     "start": "pm2 start ./app.json",
-    "stop": "pm2 stop ./app.json"
+    "stop": "pm2 stop ./app.json",
+    "test": "NODE_ENV=test mocha",
+    "test-coverage": "NODE_ENV=test istanbul cover _mocha",
+    "coveralls": "npm run test-coverage -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -19,14 +21,15 @@
   },
   "homepage": "https://github.com/sapphiredev/drst_bot#readme",
   "dependencies": {
-    "knex": "^0.9.0",
+    "knex": "^0.12.2",
     "lwip": "0.0.9",
     "node-schedule": "^1.1.1",
     "sqlite3": "^3.1.4",
-    "twit": "^2.1.1",
-    "underscore": "^1.8.3"
+    "twit": "^2.2.5"
   },
   "devDependencies": {
-    "jshint": "^2.8.0"
+    "coveralls": "^2.11.14",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.0"
   }
 }
