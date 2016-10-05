@@ -1,11 +1,5 @@
 'use strict';
 
-const config = require('../config.js');
-
-let knex = require('knex')(config.knex);
-let twit = new (require('twit'))(config.twitter);
-let twit_sub = new (require('twit'))(config.twitter_sub);
-
 let Card = new require('./lib/card');
 let Twitter = new require('./lib/twitter');
 
