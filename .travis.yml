@@ -8,6 +8,9 @@ node_js:
 
 sudo: false
 
+env:
+  - CXX=g++-5
+
 script:
   - cp config.sample.js config.js
   - jshint src/
@@ -18,4 +21,11 @@ notifications:
 
 after_success:
   - npm run coveralls
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-5
 
