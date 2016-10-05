@@ -29,7 +29,7 @@ class Card {
 		};
 		
 		return new Promise((resolve, reject) => {
-			return knex(table_name).then((rows) => {
+			return knex(table_name).where('multiplier', '!=', 0).then((rows) => {
 				rows.forEach((row) => {
 					Array.from(Array(row.multiplier)).forEach(() => {
 						self.cards[row.rarity].push(row);
