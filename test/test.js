@@ -19,21 +19,5 @@ describe('@drst_bot', function() {
 			done();
 		});
 	});
-	
-	it('create image from single card', function(done) {
-		app.card.pickSingleCard().then((cards) => {
-			return app.card.createImage(cards);
-		}).then(() => {
-			done();
-		});
-	});
-	
-	it('create image from multiple cards', function(done) {
-		app.card.pickMultipleCards().then((cards) => {
-			return app.card.createImage(cards);
-		}).then(() => {
-			done();
-		});
-	});
 });
 
