@@ -76,12 +76,12 @@ class Twitter {
 				if(flag) {
 					let text = data.text.toLowerCase();
 					if(text.match(regex_multiple)) {
-						self._replyMultiple(data).then().catch(() => {
+						self._replyMultiple(data).then().catch((e) => {
 							console.log(e);
 						});
 					}
 					else if(text.match(regex_single)) {
-						self._replySingle(data).then().catch(() => {
+						self._replySingle(data).then().catch((e) => {
 							console.log(e);
 						});
 					}
