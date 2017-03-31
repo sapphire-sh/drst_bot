@@ -17,19 +17,19 @@ const regex_single = /단챠|단발|solo|単発/;
 class Twitter {
 	initialize(card) {
 		let self = this;
-		
+
 		return new Promise((resolve, reject) => {
 			self.card = card;
 			resolve();
 		});
 	}
-	
+
 	startStream() {
 		let self = this;
-		
+
 		let stream = twit.stream('user');
 		let stream_sub = twit_sub.stream('user');
-		
+
 		stream.on('follow', (data) => {
 			if(data.event === 'follow' && data.source.screen_name !== 'drst_bot') {
 				twit.post('friendships/create', {
@@ -41,13 +41,13 @@ class Twitter {
 				});
 			}
 		});
-		
+
 		stream.on('tweet', (data) => {
 			if(!data.retweeted_status) {
 				let flag = data.entities.user_mentions.some((user) => {
 					return user.screen_name === 'drst_bot';
 				});
-				
+
 				if(flag) {
 					let text = data.text.toLowerCase();
 					if(text.match(regex_multiple)) {
@@ -63,7 +63,7 @@ class Twitter {
 				}
 			}
 		});
-		
+
 		stream_sub.on('tweet', (data) => {
 			if(!data.retweeted_status) {
 				let flag = data.entities.user_mentions.some((user) => {
@@ -72,7 +72,7 @@ class Twitter {
 				flag &= data.entities.user_mentions.every((user) => {
 					return user.screen_name !== 'drst_bot';
 				});
-				
+
 				if(flag) {
 					let text = data.text.toLowerCase();
 					if(text.match(regex_multiple)) {
@@ -89,11 +89,11 @@ class Twitter {
 			}
 		});
 	}
-	
+
 	_replyMultiple(data) {
 		let self = this;
-		
-		return self.card.pickMultipleCards().then((cards) => {
+
+		return self.card.pickMultipleCards(data).then((cards) => {
 			return self.card.createImage(cards);
 		}).then((buffer) => {
 			let str = `@${data.user.screen_name}\n`;
@@ -102,11 +102,11 @@ class Twitter {
 			console.log(e);
 		});
 	}
-	
+
 	_replySingle(data) {
 		let self = this;
-		
-		return self.card.pickSingleCard().then((cards) => {
+
+		return self.card.pickSingleCard(data).then((cards) => {
 			return self.card.createImage(cards);
 		}).then((buffer) => {
 			let str = `@${data.user.screen_name}\n`;
@@ -115,10 +115,10 @@ class Twitter {
 			console.log(e);
 		});
 	}
-	
+
 	_tweet(status, in_reply_to, buffer) {
 		let self = this;
-		
+
 		return new Promise((resolve, reject) => {
 			twit.post('media/upload', {
 				media_data: buffer.toString('base64')
@@ -141,16 +141,16 @@ class Twitter {
 							throw new Error(err);
 						}
 					}
-					
+
 					resolve();
 				});
 			});
 		});
 	}
-		
+
 	_tweetSub(status, in_reply_to, buffer) {
 		let self = this;
-		
+
 		return new Promise((resolve, reject) => {
 			twit_sub.post('media/upload', {
 				media_data: buffer.toString('base64')
@@ -166,13 +166,13 @@ class Twitter {
 					if(err) {
 						throw new Error(err);
 					}
-					
+
 					resolve();
 				});
 			});
 		});
 	}
-	
+
 	startScheduler() {
 		let self = this;
 
@@ -203,4 +203,3 @@ class Twitter {
 }
 
 module.exports = Twitter;
-
