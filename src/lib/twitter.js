@@ -64,30 +64,30 @@ class Twitter {
 			}
 		});
 
-		stream_sub.on('tweet', (data) => {
-			if(!data.retweeted_status) {
-				let flag = data.entities.user_mentions.some((user) => {
-					return user.screen_name === 'drst_bot_1';
-				});
-				flag &= data.entities.user_mentions.every((user) => {
-					return user.screen_name !== 'drst_bot';
-				});
-
-				if(flag) {
-					let text = data.text.toLowerCase();
-					if(text.match(regex_multiple)) {
-						self._replyMultiple(data).then().catch((e) => {
-							console.log(e);
-						});
-					}
-					else if(text.match(regex_single)) {
-						self._replySingle(data).then().catch((e) => {
-							console.log(e);
-						});
-					}
-				}
-			}
-		});
+		// stream_sub.on('tweet', (data) => {
+		// 	if(!data.retweeted_status) {
+		// 		let flag = data.entities.user_mentions.some((user) => {
+		// 			return user.screen_name === 'drst_bot_1';
+		// 		});
+		// 		flag &= data.entities.user_mentions.every((user) => {
+		// 			return user.screen_name !== 'drst_bot';
+		// 		});
+		//
+		// 		if(flag) {
+		// 			let text = data.text.toLowerCase();
+		// 			if(text.match(regex_multiple)) {
+		// 				self._replyMultiple(data).then().catch((e) => {
+		// 					console.log(e);
+		// 				});
+		// 			}
+		// 			else if(text.match(regex_single)) {
+		// 				self._replySingle(data).then().catch((e) => {
+		// 					console.log(e);
+		// 				});
+		// 			}
+		// 		}
+		// 	}
+		// });
 	}
 
 	_replyMultiple(data) {

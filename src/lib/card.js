@@ -3,7 +3,7 @@
 let path = require('path');
 
 const jimp = require('jimp');
-const request = require('request');
+const Horseman = require('node-horseman');
 const cheerio = require('cheerio');
 
 const offset = 12;
@@ -22,12 +22,12 @@ class Card {
 		let self = this;
 
 		return new Promise((resolve, reject) => {
-			request({
-				url: `https://mobile.twitter.com/${data.user.screen_name}/following`,
-				timeout: 10000
-			}, (err, res, body) => {
-				if(!err && res.statusCode === 200) {
-					let $ = cheerio.load(body);
+			const horseman = new Horseman();
+			horseman
+				.open(`https://mobile.twitter.com/${data.user.screen_name}/following`)
+				.html()
+				.then((content) => {
+					let $ = cheerio.load(content);
 
 					let k = [];
 
@@ -38,11 +38,7 @@ class Card {
 					});
 
 					resolve(k[Math.floor(Math.random() * k.length)]);
-				}
-				else {
-					reject();
-				}
-			});
+				}).close();
 		});
 	}
 
