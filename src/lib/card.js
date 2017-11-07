@@ -6,7 +6,7 @@ const config = require('../../config');
 
 let knex = require('knex')(config.knex);
 
-const lwip = require('lwip');
+const lwip = require('pajk-lwip');
 
 const offset = 12;
 const img_size = 88 + offset;

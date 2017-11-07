@@ -22,9 +22,9 @@
   "homepage": "https://github.com/sapphiredev/drst_bot#readme",
   "dependencies": {
     "knex": "^0.12.2",
-    "lwip": "0.0.9",
     "node-schedule": "^1.1.1",
-    "sqlite3": "^3.1.4",
+    "pajk-lwip": "^0.2.0",
+    "sqlite3": "^3.1.13",
     "twit": "^2.2.5"
   },
   "devDependencies": {
